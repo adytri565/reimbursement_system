@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// import { useAuth } from '../lib/AuthContext'; // Buka komentar jika AuthContext sudah siap
+import { supabase } from '../lib/supabaseClient'; // KONEKSI LANGSUNG KE SUPABASE
 import AuthLayout from '../layouts/AuthLayout';
 
 export default function RegisterPage() {
-  // const { register } = useAuth(); // Buka komentar jika AuthContext sudah siap
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     password: '',
+    department: 'Operasional',
     role: 'employee'
   });
   const [error, setError] = useState('');
@@ -25,23 +25,28 @@ export default function RegisterPage() {
     setError('');
     
     try {
-      // SIMULASI SEMENTARA (Hapus bagian ini jika sudah integrasi backend)
-      setTimeout(() => {
-        alert('Registrasi berhasil! Silakan login.');
-        navigate('/login');
-      }, 1000);
+      // PROSES SIGN UP REAL KE SUPABASE AUTH
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.fullName,
+            department: formData.department,
+            role: formData.role.toLowerCase() // Menjamin role dikirim dalam lowercase
+          }
+        }
+      });
 
-      // --- KODE ASLI BACKEND ---
-      // const { error } = await register(formData.email, formData.password, {
-      //   full_name: formData.fullName,
-      //   role: formData.role
-      // });
-      // if (error) throw error;
-      // alert('Registrasi berhasil! Silakan login.');
-      // navigate('/login');
+      if (signUpError) throw signUpError;
+
+      alert('Registrasi berhasil! Silakan login dengan akun baru Anda.');
+      navigate('/login');
       
     } catch (err) {
+      console.error('Gagal Registrasi:', err);
       setError(err.message || 'Gagal mendaftar. Silakan coba lagi.');
+    } finally {
       setLoading(false);
     }
   };
@@ -52,7 +57,7 @@ export default function RegisterPage() {
         <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Get Started Now</h2>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm text-center">
+          <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm text-center border border-red-200">
             {error}
           </div>
         )}
@@ -93,9 +98,26 @@ export default function RegisterPage() {
               minLength="6" 
               value={formData.password} 
               onChange={handleChange}
-              placeholder="Password"
+              placeholder="Password (min 6 karakter)"
               className="w-full px-4 py-2.5 border border-gray-400 rounded-lg focus:outline-none focus:border-[#F16A28] focus:ring-1 focus:ring-[#F16A28] text-sm"
             />
+          </div>
+
+          {/* Field Department */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-800 mb-1">Department</label>
+            <select 
+              name="department" 
+              value={formData.department} 
+              onChange={handleChange}
+              className="w-full px-4 py-2.5 border border-gray-400 rounded-lg focus:outline-none focus:border-[#F16A28] focus:ring-1 focus:ring-[#F16A28] text-sm bg-white"
+            >
+              <option value="Operasional">Operasional</option>
+              <option value="IT">IT & Engineering</option>
+              <option value="Sales">Sales & Marketing</option>
+              <option value="Finance">Finance & Accounting</option>
+              <option value="HRD">HRD / Human Resources</option>
+            </select>
           </div>
           
           {/* Field Role */}

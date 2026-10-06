@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-// import { useAuth } from '../lib/AuthContext'; // Buka komentar jika AuthContext sudah siap
+import { useAuth } from '../lib/AuthContext';
 import AuthLayout from '../layouts/AuthLayout';
 
 export default function LoginPage() {
-  // const { login } = useAuth(); // Buka komentar jika AuthContext sudah siap
+  const auth = useAuth();
+  const login = auth?.login;
   const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,21 +17,21 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-    
-    try {
-      // BAGIAN INI DIGUNAKAN UNTUK SIMULASI SEMENTARA
-      // Hapus timeout ini dan aktifkan fungsi login() di bawahnya saat integrasi ke backend
-      setTimeout(() => {
-        navigate('/manager/dashboard'); // Diarahkan ke manager untuk testing
-      }, 1000);
 
-      // --- KODE ASLI BACKEND ---
-      // const { error } = await login(email, password);
-      // if (error) throw error;
-      // navigate('/');
-      
+    try {
+      if (!login) {
+        throw new Error('Metode login belum terhubung ke AuthProvider.');
+      }
+
+      const { error: loginError } = await login(email, password);
+      if (loginError) throw loginError;
+
+      // Redirect ke root ('/'), RootRedirect di App.jsx yang akan mengarahkan sesuai role
+      navigate('/', { replace: true });
     } catch (err) {
+      console.error('Gagal Login:', err);
       setError(err.message || 'Gagal login. Periksa email dan password Anda.');
+    } finally {
       setLoading(false);
     }
   };
@@ -40,7 +42,7 @@ export default function LoginPage() {
         <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Welcome Back</h2>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm text-center">
+          <div className="bg-red-50 text-red-600 p-3 rounded mb-4 text-sm text-center border border-red-200">
             {error}
           </div>
         )}

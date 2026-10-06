@@ -1,34 +1,62 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from './supabaseClient'; 
+import { supabase } from './supabaseClient';
 
 const AuthContext = createContext();
-
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
 
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const fetchProfile = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle(); // Gunakan maybeSingle agar tidak melempar exception jika baris belum ada
+
+      if (error) throw error;
+      
+      // Fallback jika profil belum terbuat otomatis di DB
+      if (!data) {
+        setUserProfile({ id: userId, role: 'employee', full_name: 'User' });
+      } else {
+        setUserProfile(data);
+      }
+    } catch (err) {
+      console.error('Gagal mengambil profil:', err.message || err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // 1. Ambil session saat pertama kali aplikasi dimuat
+    let currentUserId = null;
+
+    // Ambil sesi awal
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) {
-        fetchUserProfile(session.user.id);
+      if (session?.user) {
+        currentUserId = session.user.id;
+        fetchProfile(session.user.id);
       } else {
         setLoading(false);
       }
     });
 
-    // 2. Dengarkan perubahan status otentikasi (login/logout)
+    // Listen perubahan auth status
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) {
-        fetchUserProfile(session.user.id);
+      
+      // Hanya fetch profile jika ID user benar-benar berubah/baru login
+      if (session?.user) {
+        if (session.user.id !== currentUserId) {
+          currentUserId = session.user.id;
+          fetchProfile(session.user.id);
+        }
       } else {
+        currentUserId = null;
         setUserProfile(null);
         setLoading(false);
       }
@@ -37,58 +65,45 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Fungsi untuk mengambil data profil tambahan dari tabel database
-  const fetchUserProfile = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) throw error;
-      setUserProfile(data);
-    } catch (error) {
-      console.error('Gagal mengambil data profil:', error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Fungsi Login
   const login = async (email, password) => {
+    setLoading(true);
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
-    if (error) throw error;
-    return data;
+    if (error) setLoading(false);
+    return { data, error };
   };
 
-  // Fungsi Register
-  const register = async (email, password, userData) => {
+  const register = async (email, password, metadata) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: userData // Menyisipkan role, nama, departemen ke Supabase Auth
-      }
+        data: metadata,
+      },
     });
-    
-    if (error) throw error;
-    return data;
+    return { data, error };
   };
 
-  // Fungsi Logout
   const logout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    await supabase.auth.signOut();
+    setSession(null);
+    setUserProfile(null);
+    setLoading(false);
   };
 
   return (
-    // Di sinilah fungsi register diekspor agar bisa dipanggil oleh halaman RegisterPage
-    <AuthContext.Provider value={{ session, userProfile, login, register, logout, loading }}>
-      {!loading && children}
+    <AuthContext.Provider value={{ session, userProfile, loading, login, register, logout }}>
+      {children}
     </AuthContext.Provider>
   );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth harus digunakan di dalam <AuthProvider>');
+  }
+  return context;
 };

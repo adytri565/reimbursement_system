@@ -46,24 +46,43 @@ import AdminManageUser from './pages/AdminManageUser'
 // 3. KOMPONEN REDIRECT OTOMATIS BERDASARKAN ROLE
 // ==========================================
 const RootRedirect = () => {
-  const { session, userProfile } = useAuth()
+  const { session, userProfile, loading } = useAuth();
 
-  if (!session) return <Navigate to="/login" replace />
-  if (!userProfile) return <div className="flex items-center justify-center min-h-screen font-sans text-gray-500">Memuat profil...</div>
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen font-sans text-gray-500">
+        Memeriksa sesi login...
+      </div>
+    );
+  }
 
-  const role = userProfile.role?.toLowerCase()
+  if (!session) return <Navigate to="/login" replace />;
+  
+  if (!userProfile) {
+    return (
+      <div className="flex items-center justify-center min-h-screen font-sans text-gray-500">
+        Memuat profil pengguna...
+      </div>
+    );
+  }
+
+  // Ambil role, ubah jadi huruf kecil dan hapus spasi jika ada
+  const role = userProfile.role ? String(userProfile.role).trim().toLowerCase() : 'employee';
+
+  console.log("Redirecting user with role:", role); // Cek di Console browser (F12)
 
   switch (role) {
     case 'manager':
-      return <Navigate to="/manager/dashboard" replace />
+      return <Navigate to="/manager/dashboard" replace />;
     case 'finance':
-      return <Navigate to="/finance/dashboard" replace />
+      return <Navigate to="/finance/dashboard" replace />;
     case 'admin':
-      return <Navigate to="/admin/dashboard" replace />
+      return <Navigate to="/admin/dashboard" replace />;
+    case 'employee':
     default:
-      return <Navigate to="/employee/dashboard" replace />
+      return <Navigate to="/employee/dashboard" replace />;
   }
-}
+};
 
 // ==========================================
 // 4. MAIN ROUTING & APPLICATION PROVIDER
@@ -71,6 +90,7 @@ const RootRedirect = () => {
 export default function App() {
   return (
     <AuthProvider>
+      
       <BrowserRouter>
         <Routes>
           {/* Default & Public Auth Routes */}
