@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* =========================================
+     1. KARTU & LAYOUT UTAMA (CARDS & LAYOUTS)
+     ========================================= */
+  .card-container {
+    @apply bg-white p-8 rounded-2xl shadow-sm min-h-[500px];
+  }
+  .card-title {
+    @apply text-2xl font-bold text-gray-800 mb-2;
+  }
+  .card-subtitle {
+    @apply text-gray-500 text-sm mb-8;
+  }
+  .split-screen-container {
+    @apply flex min-h-screen w-full font-sans bg-white;
+  }
+
+  /* =========================================
+     2. TOMBOL (BUTTONS)
+     ========================================= */
+  /* Tombol Utama (Warna Oranye) */
+  .btn-primary {
+    @apply px-6 py-2.5 bg-[#F16A28] text-white font-bold rounded-lg hover:bg-opacity-90 transition shadow-md flex items-center justify-center;
+  }
+  /* Tombol Sekunder (Warna Navy) */
+  .btn-secondary {
+    @apply px-6 py-2.5 bg-[#232B3E] text-white font-medium rounded-lg hover:bg-opacity-90 transition shadow-sm flex items-center justify-center;
+  }
+  /* Tombol Outline (Garis Luar Abu-abu) */
+  .btn-outline {
+    @apply px-6 py-2.5 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition flex items-center justify-center;
+  }
+  /* Tombol Sukses (Warna Hijau Teal) */
+  .btn-success {
+    @apply px-6 py-2.5 bg-[#0D7C66] text-white font-medium rounded-lg hover:bg-opacity-90 transition shadow-sm flex items-center justify-center;
+  }
+  /* Tombol Danger/Tolak (Warna Merah) */
+  .btn-danger {
+    @apply px-6 py-2.5 text-red-500 font-medium bg-transparent hover:bg-red-50 rounded-lg transition flex items-center justify-center;
+  }
+
+  /* =========================================
+     3. FORM & INPUT (FORMS)
+     ========================================= */
+  .form-label {
+    @apply block text-sm font-semibold text-gray-800 mb-1.5;
+  }
+  .form-input {
+    @apply w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#F16A28] focus:ring-1 focus:ring-[#F16A28] text-sm bg-white transition;
+  }
+  .form-input-icon {
+    @apply w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:border-[#F16A28] text-sm bg-white;
+  }
+  .search-input {
+    @apply w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-[#232B3E] text-sm font-sans bg-gray-50;
+  }
+
+  /* =========================================
+     4. TABEL (TABLES)
+     ========================================= */
+  .table-wrapper {
+    @apply overflow-x-auto min-h-[300px] mt-6;
+  }
+  .table-main {
+    @apply w-full text-left border-collapse font-sans text-sm;
+  }
+  .table-header {
+    @apply py-4 px-4 font-bold text-gray-800 border-b-2 border-gray-200;
+  }
+  .table-row {
+    @apply border-b border-gray-100 hover:bg-gray-50 transition;
+  }
+  .table-cell {
+    @apply py-4 px-4 text-gray-700;
+  }
+
+  /* =========================================
+     5. STATUS BADGE (LABEL STATUS)
+     ========================================= */
+  .badge-approved {
+    @apply bg-[#38A169] text-white px-3 py-1 text-xs font-bold rounded-md inline-block;
+  }
+  .badge-rejected {
+    @apply bg-[#E53E3E] text-white px-3 py-1 text-xs font-bold rounded-md inline-block;
+  }
+  .badge-pending {
+    @apply bg-[#ECC94B] text-gray-900 px-3 py-1 text-xs font-bold rounded-md inline-block;
+  }
+
+  /* =========================================
+     6. MODAL & OVERLAY (POP-UPS)
+     ========================================= */
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm;
+  }
+  .modal-box {
+    @apply bg-white w-full max-w-4xl rounded-2xl p-8 relative shadow-2xl max-h-[90vh] overflow-y-auto font-sans;
+  }
+  .modal-close-btn {
+    @apply absolute top-6 right-6 text-gray-400 hover:text-gray-800 transition;
+  }
+}
